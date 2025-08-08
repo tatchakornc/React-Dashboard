@@ -1,0 +1,238 @@
+/* QR Code Scanner Styles */
+.qr-scanner {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.scanner-container {
+  position: relative;
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.scanner-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+.scanner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.scanner-frame {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+}
+
+.scanner-frame::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #22c55e, transparent);
+  transform: translate(-50%, -50%);
+  animation: scanLine 2s ease-in-out infinite;
+}
+
+.corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #22c55e;
+  border-radius: 4px;
+}
+
+.corner.top-left {
+  top: -3px;
+  left: -3px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.corner.top-right {
+  top: -3px;
+  right: -3px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.corner.bottom-left {
+  bottom: -3px;
+  left: -3px;
+  border-right: none;
+  border-top: none;
+}
+
+.corner.bottom-right {
+  bottom: -3px;
+  right: -3px;
+  border-left: none;
+  border-top: none;
+}
+
+.scanner-instructions {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: white;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 12px 20px;
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+}
+
+.scanner-instructions p {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.scanner-instructions small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Error States */
+.qr-scanner-error,
+.qr-scanner-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  min-height: 300px;
+}
+
+.error-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 32px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+}
+
+.qr-scanner-error h3 {
+  font-size: 20px;
+  color: #1a202c;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.qr-scanner-error p {
+  color: #64748b;
+  margin: 0 0 24px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.qr-scanner-loading .loading-spinner {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 32px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+.qr-scanner-loading p {
+  color: #64748b;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Animations */
+@keyframes scanLine {
+  0% {
+    transform: translate(-50%, -50%) scaleX(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scaleX(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scaleX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.corner {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .scanner-frame {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .corner {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+  }
+  
+  .scanner-instructions {
+    bottom: 16px;
+    padding: 10px 16px;
+  }
+  
+  .scanner-instructions p {
+    font-size: 13px;
+  }
+  
+  .scanner-instructions small {
+    font-size: 11px;
+  }
+}
