@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 
 const QRCodeGenerator = () => {
-  const [sn, setSN] = useState('ESP32-001');
+  const [sn, setSN] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState('');
 
   const generateQR = () => {
+    if (!sn.trim()) {
+      alert('กรุณากรอก Serial Number');
+      return;
+    }
+
     // สร้าง URL ที่มี device data เพื่อเด้งมาเว็บไซต์
-    const currentHost = window.location.origin; // http://localhost:3000
-    const selectedDevice = sampleDevices.find(d => d.sn === sn);
+    const currentHost = window.location.origin;
     
     const deviceData = {
-      sn: sn,
-      type: selectedDevice?.type || 'unknown',
-      name: selectedDevice?.name || sn
+      sn: sn.trim(),
+      type: 'unknown',
+      name: sn.trim()
     };
     
     // Encode device data ใน URL เพื่อเด้งมาเว็บไซต์ตัวนี้
@@ -21,42 +25,11 @@ const QRCodeGenerator = () => {
     setQrCodeUrl(qrUrl);
   };
 
-  const sampleDevices = [
-    { sn: 'ESP32-RELAY4-001', type: 'relay4', name: 'รีเลย์ 4 ช่อง #1' },
-    { sn: 'ESP32-LIGHT-001', type: 'lighting', name: 'หลอดไฟ LED #1' },
-    { sn: 'ESP32-PLUG-001', type: 'plug', name: 'ปลั๊กอัจฉริยะ #1' },
-    { sn: 'ESP32-CAM-001', type: 'security_camera', name: 'กล้องรักษาความปลอดภัย #1' },
-    { sn: 'ESP32-DOOR-001', type: 'door_lock', name: 'ล็อคประตูดิจิตอล #1' },
-  ];
-
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h2>🔧 QR Code Generator สำหรับทดสอบ</h2>
-      <p>สร้าง QR Code ที่เด้งมาเว็บไซต์นี้พร้อมข้อมูลอุปกรณ์</p>
+      <h2>🔧 QR Code Generator</h2>
+      <p>สร้าง QR Code สำหรับอุปกรณ์ที่ต้องการเพิ่มเข้าระบบ</p>
       
-      <div style={{ marginBottom: '20px' }}>
-        <h3>อุปกรณ์ตัวอย่าง:</h3>
-        <div style={{ display: 'grid', gap: '10px' }}>
-          {sampleDevices.map(device => (
-            <button
-              key={device.sn}
-              onClick={() => setSN(device.sn)}
-              style={{
-                padding: '12px',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                background: sn === device.sn ? '#667eea' : 'white',
-                color: sn === device.sn ? 'white' : '#333',
-                cursor: 'pointer',
-                textAlign: 'left'
-              }}
-            >
-              <strong>{device.sn}</strong> - {device.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div style={{ marginBottom: '20px' }}>
         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
           Serial Number:
@@ -72,7 +45,7 @@ const QRCodeGenerator = () => {
             borderRadius: '8px',
             fontSize: '16px'
           }}
-          placeholder="กรอก Serial Number"
+          placeholder="กรอก Serial Number ของอุปกรณ์"
         />
       </div>
 

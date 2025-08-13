@@ -23,8 +23,6 @@ const Dashboard = ({ currentUser, userRole, showToast, pendingDevice, setPending
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'main':
-        return <MainDashboard currentUser={currentUser} showToast={showToast} />;
-      case 'realtime':
         return <RealTimeDashboard user={currentUser} showToast={showToast} />;
       case 'settings':
         return <Settings currentUser={currentUser} showToast={showToast} />;
@@ -41,13 +39,13 @@ const Dashboard = ({ currentUser, userRole, showToast, pendingDevice, setPending
       case 'database':
         return userRole === 'owner' || userRole === 'admin' ? 
           <DatabaseManagement showToast={showToast} /> : 
-          <MainDashboard currentUser={currentUser} showToast={showToast} />;
+          <RealTimeDashboard user={currentUser} showToast={showToast} />;
       case 'users':
         return userRole === 'owner' ? 
           <UsersManagement showToast={showToast} userRole={userRole} /> : 
-          <MainDashboard currentUser={currentUser} showToast={showToast} />;
+          <RealTimeDashboard user={currentUser} showToast={showToast} />;
       default:
-        return <MainDashboard currentUser={currentUser} showToast={showToast} />;
+        return <RealTimeDashboard user={currentUser} showToast={showToast} />;
     }
   };
 

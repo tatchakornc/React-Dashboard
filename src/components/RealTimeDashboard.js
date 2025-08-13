@@ -17,11 +17,10 @@ import {
   CounterDashboard 
 } from './AdvancedDashboardComponents';
 
-const RealTimeDashboard = ({ user }) => {
+const RealTimeDashboard = ({ user, showToast }) => {
   const [devices, setDevices] = useState({});
   const [deviceTypes, setDeviceTypes] = useState({});
   const [deviceData, setDeviceData] = useState({});
-  const [isSimulating, setIsSimulating] = useState(false);
 
   // Component mapping
   const componentMap = {
@@ -127,61 +126,43 @@ const RealTimeDashboard = ({ user }) => {
     }
   }, [user]);
 
-  // Simulate random data for demonstration
-  const startSimulation = useCallback(() => {
-    if (!user || isSimulating) return;
-
-    setIsSimulating(true);
+  // Handle device deletion
+  const handleDeleteDevice = useCallback(async (deviceSN, deviceName) => {
+    if (!user) return;
     
-    const interval = setInterval(() => {
-      Object.keys(devices).forEach(async (deviceSN) => {
-        const deviceType = deviceTypes[deviceSN];
-        if (!deviceType) return;
+    const confirmDelete = window.confirm(
+      `คุณต้องการลบอุปกรณ์ "${deviceName}" (SN: ${deviceSN}) หรือไม่?\n\nการลบจะไม่สามารถยกเลิกได้!`
+    );
+    
+    if (!confirmDelete) return;
 
-        const typeConfig = DEVICE_TYPES[deviceType];
-        if (!typeConfig) return;
-
-        let simulatedValue;
-
-        switch (typeConfig.dataType) {
-          case 'number':
-            const min = typeConfig.min || 0;
-            const max = typeConfig.max || 100;
-            simulatedValue = Math.random() * (max - min) + min;
-            break;
-          case 'boolean':
-            // Don't simulate switches and locks automatically
-            if (deviceType === 'switch' || deviceType === 'lock') return;
-            simulatedValue = Math.random() > 0.7;
-            break;
-          case 'object':
-            simulatedValue = {
-              lat: 13.7563 + (Math.random() - 0.5) * 0.01,
-              lng: 100.5018 + (Math.random() - 0.5) * 0.01
-            };
-            break;
-          default:
-            return;
-        }
-
-        try {
-          const dataRef = ref(db, `deviceData/${user.uid}/${deviceSN}`);
-          await set(dataRef, {
-            value: simulatedValue,
-            timestamp: Date.now()
-          });
-        } catch (error) {
-          console.error('Error simulating data:', error);
-        }
-      });
-    }, 2000); // Update every 2 seconds
-
-    // Stop simulation after 60 seconds
-    setTimeout(() => {
-      clearInterval(interval);
-      setIsSimulating(false);
-    }, 60000);
-  }, [user, devices, deviceTypes, isSimulating]);
+    try {
+      // ลบจาก devices table
+      const deviceRef = ref(db, `devices/${user.uid}/${deviceSN}`);
+      await set(deviceRef, null);
+      
+      // ลบจาก deviceData table  
+      const dataRef = ref(db, `deviceData/${user.uid}/${deviceSN}`);
+      await set(dataRef, null);
+      
+      // ลบจาก deviceTypes table
+      const typeRef = ref(db, `deviceTypes/${user.uid}/${deviceSN}`);
+      await set(typeRef, null);
+      
+      console.log(`✅ Device ${deviceSN} deleted successfully`);
+      
+      // แสดงข้อความแจ้งเตือน
+      if (showToast) {
+        showToast(`ลบอุปกรณ์ "${deviceName}" เรียบร้อยแล้ว`, 'success');
+      }
+      
+    } catch (error) {
+      console.error('❌ Error deleting device:', error);
+      if (showToast) {
+        showToast('เกิดข้อผิดพลาดในการลบอุปกรณ์', 'error');
+      }
+    }
+  }, [user]);
 
   // Render dashboard component
   const renderDashboard = (deviceSN, deviceInfo) => {
@@ -236,14 +217,6 @@ const RealTimeDashboard = ({ user }) => {
             <span className="stat-label">มีข้อมูล</span>
           </div>
         </div>
-        <button 
-          className={`simulate-btn ${isSimulating ? 'active' : ''}`}
-          onClick={startSimulation}
-          disabled={isSimulating}
-        >
-          <i className="fas fa-play"></i>
-          {isSimulating ? 'กำลังจำลองข้อมูล...' : 'จำลองข้อมูล Real-time'}
-        </button>
       </div>
 
       {deviceCount === 0 ? (
@@ -281,18 +254,27 @@ const RealTimeDashboard = ({ user }) => {
                     <h3>{deviceInfo.name}</h3>
                     <span className="device-sn">SN: {deviceSN}</span>
                   </div>
-                  <div className="device-status">
-                    {currentData ? (
-                      <div className="status online">
-                        <i className="fas fa-circle"></i>
-                        <span>Online</span>
-                      </div>
-                    ) : (
-                      <div className="status offline">
-                        <i className="fas fa-circle"></i>
-                        <span>Offline</span>
-                      </div>
-                    )}
+                  <div className="device-actions">
+                    <div className="device-status">
+                      {currentData ? (
+                        <div className="status online">
+                          <i className="fas fa-circle"></i>
+                          <span>Online</span>
+                        </div>
+                      ) : (
+                        <div className="status offline">
+                          <i className="fas fa-circle"></i>
+                          <span>Offline</span>
+                        </div>
+                      )}
+                    </div>
+                    <button 
+                      className="delete-device-btn"
+                      onClick={() => handleDeleteDevice(deviceSN, deviceInfo.name)}
+                      title="ลบอุปกรณ์"
+                    >
+                      <i className="fas fa-trash"></i>
+                    </button>
                   </div>
                 </div>
 
@@ -482,6 +464,37 @@ const RealTimeDashboard = ({ user }) => {
           align-items: center;
         }
 
+        .device-actions {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
+
+        .delete-device-btn {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .delete-device-btn:hover {
+          background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .delete-device-btn:active {
+          transform: translateY(0);
+        }
+
         .device-info h3 {
           margin: 0 0 5px 0;
           color: #374151;
@@ -554,6 +567,17 @@ const RealTimeDashboard = ({ user }) => {
             flex-direction: column;
             text-align: center;
             gap: 15px;
+          }
+
+          .device-actions {
+            flex-direction: row;
+            justify-content: center;
+            gap: 20px;
+          }
+
+          .delete-device-btn {
+            width: 40px;
+            height: 40px;
           }
         }
       `}</style>

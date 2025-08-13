@@ -13,8 +13,7 @@ const Sidebar = ({ currentUser, userRole, currentPage, setCurrentPage, showToast
   };
 
   const navItems = [
-    { id: 'main', icon: 'fas fa-home', label: 'หน้าหลัก', show: true },
-    { id: 'realtime', icon: 'fas fa-tachometer-alt', label: 'Real-Time Dashboard', show: true },
+    { id: 'main', icon: 'fas fa-tachometer-alt', label: 'หน้าหลัก', show: true },
     { id: 'settings', icon: 'fas fa-cog', label: 'การตั้งค่า', show: true },
     { id: 'addDevice', icon: 'fas fa-plus', label: 'เพิ่มอุปกรณ์', show: true },
     { id: 'qrGenerator', icon: 'fas fa-qrcode', label: 'QR Generator', show: userRole === 'owner' || userRole === 'admin', dev: true },

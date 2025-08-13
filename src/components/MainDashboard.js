@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ref, get, update, remove } from 'firebase/database';
+import { ref, get, update, remove, set } from 'firebase/database';
 import { db } from '../firebase';
 import DeviceCard from './DeviceCard';
 
@@ -42,9 +42,14 @@ const MainDashboard = ({ currentUser, showToast }) => {
 
     try {
       if (device.type === 'relay4' && device.sn && device.relayKey) {
-        // สำหรับ relay4: อัปเดตใน devices_by_sn
-        const stateRef = ref(db, `devices_by_sn/${device.sn}/state`);
-        await update(stateRef, { [device.relayKey]: newState });
+        // สำหรับ relay4: อัปเดตใน deviceData เหมือนกับ ESP32
+        const relayPath = `/deviceData/${currentUser.uid}/${device.sn}_${device.relayKey}`;
+        const stateRef = ref(db, `${relayPath}/value`);
+        await set(stateRef, newState);
+        
+        // อัปเดตเวลา timestamp
+        const timestampRef = ref(db, `${relayPath}/timestamp`);
+        await set(timestampRef, Date.now());
         
         // อัปเดต state ใน devices ของ user
         const userDeviceRef = ref(db, `devices/${currentUser.uid}/${deviceId}/state`);

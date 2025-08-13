@@ -117,7 +117,43 @@ const DeviceCard = ({ device, onToggle, onUpdateName, onDelete }) => {
       
       <div className="device-status">
         <span className={`status-dot ${device.online ? 'online' : 'offline'}`}></span>
-        {device.online ? 'ออนไลน์' : 'ออฟไลน์'}
+        <div className="status-info">
+          <span className="status-text">{device.online ? 'ออนไลน์' : 'ออฟไลน์'}</span>
+          {device.lastSeen && (
+            <span className="last-seen">
+              อัปเดทล่าสุด: {(() => {
+                // Convert Firebase timestamp to proper date
+                let timestamp = device.lastSeen;
+                
+                // If it's a Firebase server timestamp object
+                if (timestamp && typeof timestamp === 'object' && timestamp.seconds) {
+                  timestamp = timestamp.seconds * 1000;
+                }
+                
+                // If it's already a number but seems to be in seconds (not milliseconds)
+                else if (typeof timestamp === 'number' && timestamp < 10000000000) {
+                  timestamp = timestamp * 1000;
+                }
+                
+                const date = new Date(timestamp);
+                
+                // Check if date is valid
+                if (isNaN(date.getTime())) {
+                  return 'ไม่ทราบ';
+                }
+                
+                return date.toLocaleString('th-TH', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit'
+                });
+              })()}
+            </span>
+          )}
+        </div>
       </div>
       
       <div className="device-controls">

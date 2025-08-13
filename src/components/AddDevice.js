@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ref, get, push, set } from 'firebase/database';
 import { db } from '../firebase';
 import QRCodeScanner from './QRCodeScanner';
-import { createSampleValidSNs, createUserSampleData } from '../utils/createSampleData';
 import { getDefaultDashboardType } from '../config/deviceTypes';
 import './QRCodeScanner.css';
 
@@ -14,34 +13,6 @@ const AddDevice = ({ currentUser, showToast, setCurrentPage, pendingDevice, setP
   const [processedDevices, setProcessedDevices] = useState(new Set());
   const [processingDevices, setProcessingDevices] = useState(new Set());
   const isProcessingRef = useRef(false);
-
-  const handleCreateSampleData = async () => {
-    if (loading) return;
-    
-    setLoading(true);
-    const success = await createSampleValidSNs();
-    
-    if (success) {
-      showToast('สร้างข้อมูล SN ตัวอย่างสำเร็จ!', 'success');
-    } else {
-      showToast('เกิดข้อผิดพลาดในการสร้างข้อมูล', 'error');
-    }
-    setLoading(false);
-  };
-
-  const handleCreateDashboardData = async () => {
-    if (loading || !currentUser) return;
-    
-    setLoading(true);
-    const result = await createUserSampleData(currentUser.uid);
-    
-    if (result.success) {
-      showToast('สร้างข้อมูล Dashboard ตัวอย่างสำเร็จ!', 'success');
-    } else {
-      showToast('เกิดข้อผิดพลาดในการสร้างข้อมูล Dashboard', 'error');
-    }
-    setLoading(false);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -127,7 +98,9 @@ const AddDevice = ({ currentUser, showToast, setCurrentPage, pendingDevice, setP
 
         const promises = Object.entries(relayNames).map(async ([relayKey, relayName]) => {
           console.log('➕ Creating relay:', relayKey, '-', relayName);
-          const deviceRef = await push(userDevicesRef, {
+          const deviceKey = `${sn}_${relayKey}`;
+          const deviceRef = ref(db, `devices/${currentUser.uid}/${deviceKey}`);
+          await set(deviceRef, {
             sn: sn,
             name: relayName,
             relayKey,
@@ -137,18 +110,19 @@ const AddDevice = ({ currentUser, showToast, setCurrentPage, pendingDevice, setP
           });
           
           // Auto-assign dashboard type สำหรับ relay
-          const deviceTypesRef = ref(db, `device_types/${currentUser.uid}/${deviceRef.key}`);
+          const deviceTypesRef = ref(db, `device_types/${currentUser.uid}/${deviceKey}`);
           await set(deviceTypesRef, defaultDashboardType);
           console.log('✅ Auto-assigned dashboard type:', defaultDashboardType, 'to relay:', relayKey);
           
-          return deviceRef;
+          return { key: deviceKey };
         });
 
         await Promise.all(promises);
         console.log('✅ Successfully created', promises.length, 'relay devices with auto-assigned types');
       } else {
         // อุปกรณ์ทั่วไป
-        const deviceRef = await push(userDevicesRef, {
+        const deviceRef = ref(db, `devices/${currentUser.uid}/${sn}`);
+        await set(deviceRef, {
           sn: sn,
           name: snData.name || 'อุปกรณ์ใหม่',
           type,
@@ -157,15 +131,15 @@ const AddDevice = ({ currentUser, showToast, setCurrentPage, pendingDevice, setP
         });
         
         // Auto-assign dashboard type
-        const deviceTypesRef = ref(db, `device_types/${currentUser.uid}/${deviceRef.key}`);
+        const deviceTypesRef = ref(db, `device_types/${currentUser.uid}/${sn}`);
         await set(deviceTypesRef, defaultDashboardType);
-        console.log('✅ Auto-assigned dashboard type:', defaultDashboardType, 'to device:', deviceRef.key);
+        console.log('✅ Auto-assigned dashboard type:', defaultDashboardType, 'to device:', sn);
       }
 
       showToast('เพิ่มอุปกรณ์สำเร็จและกำหนดประเภท Dashboard อัตโนมัติแล้ว!', 'success');
       setDeviceSN('');
       setScanMode(false);
-      setCurrentPage('realtime'); // ไปที่ Real-Time Dashboard
+      setCurrentPage('main'); // ไปที่หน้าหลัก
     } catch (error) {
       console.error('Error adding device:', error);
       showToast('เพิ่มอุปกรณ์ไม่สำเร็จ', 'error');
@@ -238,48 +212,6 @@ const AddDevice = ({ currentUser, showToast, setCurrentPage, pendingDevice, setP
         <div className="header-left">
           <h1>เพิ่มอุปกรณ์ใหม่</h1>
           <p>กรอก SN หรือสแกน QR Code เพื่อเพิ่มอุปกรณ์</p>
-          <div className="usage-guide">
-            <h4>📋 วิธีใช้งาน:</h4>
-            <ol>
-              <li>เพิ่มอุปกรณ์ด้วย SN หรือ QR Code</li>
-              <li>ไปที่ Real-Time Dashboard</li>
-              <li>เลือกประเภทการใช้งาน (สวิตช์, เซ็นเซอร์, ฯลฯ)</li>
-              <li>ดูข้อมูล Real-time</li>
-            </ol>
-          </div>
-        </div>
-        
-        <div className="header-actions">
-          <button 
-            type="button"
-            className="btn btn-outline"
-            onClick={handleCreateSampleData}
-            disabled={loading}
-            style={{
-              background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-              color: 'white',
-              border: 'none',
-              fontSize: '14px',
-              padding: '8px 16px'
-            }}
-          >
-            {loading ? '⏳ สร้าง...' : '📝 สร้างข้อมูลตัวอย่าง'}
-          </button>
-          <button
-            className="settings-button"
-            onClick={handleCreateDashboardData}
-            disabled={loading}
-            style={{
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-              color: 'white',
-              border: 'none',
-              fontSize: '14px',
-              padding: '8px 16px',
-              marginLeft: '10px'
-            }}
-          >
-            {loading ? '⏳ สร้าง...' : '📊 สร้างข้อมูล Dashboard'}
-          </button>
         </div>
       </header>
       
@@ -319,32 +251,6 @@ const AddDevice = ({ currentUser, showToast, setCurrentPage, pendingDevice, setP
                 {loading || pendingDevice ? 'กำลังเพิ่ม...' : 'เพิ่มอุปกรณ์'}
               </button>
             </form>
-
-            {/* ปุ่มสร้างข้อมูลตัวอย่าง */}
-            <div className="sample-data-section">
-              <h4>สำหรับการทดสอบ</h4>
-              <div className="sample-buttons">
-                <button 
-                  type="button"
-                  className="btn btn-sample"
-                  onClick={handleCreateSampleData}
-                  disabled={loading}
-                >
-                  <i className="fas fa-database"></i>
-                  {loading ? 'กำลังสร้าง...' : 'สร้างข้อมูล SN ตัวอย่าง'}
-                </button>
-                
-                <button 
-                  type="button"
-                  className="btn btn-dashboard"
-                  onClick={handleCreateDashboardData}
-                  disabled={loading}
-                >
-                  <i className="fas fa-tachometer-alt"></i>
-                  {loading ? 'กำลังสร้าง...' : 'สร้างข้อมูล Dashboard ตัวอย่าง'}
-                </button>
-              </div>
-            </div>
           </>
         ) : (
           <>
@@ -376,120 +282,3 @@ const AddDevice = ({ currentUser, showToast, setCurrentPage, pendingDevice, setP
 };
 
 export default AddDevice;
-
-// Add styles for new buttons
-const styles = `
-  .usage-guide {
-    margin-top: 15px;
-    padding: 15px;
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    border-radius: 8px;
-    border-left: 4px solid #3b82f6;
-  }
-  
-  .usage-guide h4 {
-    margin: 0 0 10px 0;
-    color: #1e40af;
-    font-size: 14px;
-    font-weight: 600;
-  }
-  
-  .usage-guide ol {
-    margin: 0;
-    padding-left: 20px;
-    color: #374151;
-    font-size: 13px;
-  }
-  
-  .usage-guide li {
-    margin: 3px 0;
-  }
-
-  .sample-data-section {
-    margin-top: 30px;
-    padding: 20px;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-  }
-  
-  .sample-data-section h4 {
-    margin: 0 0 15px 0;
-    color: #374151;
-    font-size: 16px;
-    font-weight: 600;
-  }
-  
-  .sample-buttons {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  
-  .btn-sample {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .btn-sample:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-  }
-  
-  .btn-dashboard {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .btn-dashboard:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
-  }
-  
-  .btn-sample:disabled,
-  .btn-dashboard:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-  
-  @media (max-width: 768px) {
-    .sample-buttons {
-      flex-direction: column;
-    }
-    
-    .btn-sample,
-    .btn-dashboard {
-      width: 100%;
-      justify-content: center;
-    }
-  }
-`;
-
-// Inject styles
-if (typeof document !== 'undefined') {
-  const styleElement = document.createElement('style');
-  styleElement.textContent = styles;
-  document.head.appendChild(styleElement);
-}
