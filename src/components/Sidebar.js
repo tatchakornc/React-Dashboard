@@ -13,11 +13,11 @@ const Sidebar = ({ currentUser, userRole, currentPage, setCurrentPage, showToast
   };
 
   const navItems = [
-    { id: 'main', icon: 'fas fa-tachometer-alt', label: 'หน้าหลัก', show: true },
+    { id: 'main', icon: 'fas fa-tachometer-alt', label: 'Dashboard', show: true },
     { id: 'settings', icon: 'fas fa-cog', label: 'การตั้งค่า', show: true },
     { id: 'addDevice', icon: 'fas fa-plus', label: 'เพิ่มอุปกรณ์', show: true },
-    { id: 'qrGenerator', icon: 'fas fa-qrcode', label: 'QR Generator', show: userRole === 'owner' || userRole === 'admin', dev: true },
     { id: 'database', icon: 'fas fa-database', label: 'Database', show: userRole === 'owner' || userRole === 'admin' },
+    { id: 'qrGenerator', icon: 'fas fa-qrcode', label: 'QR Generator', show: userRole === 'owner' || userRole === 'admin', dev: true },
     { id: 'users', icon: 'fas fa-users', label: 'สมาชิก', show: userRole === 'owner' }
   ];
 

@@ -1,0 +1,33 @@
+.admin-route-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 2rem;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  margin: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.admin-route-error h3 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.admin-route-error p {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.admin-route-error p:last-child {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  opacity: 0.8;
+}

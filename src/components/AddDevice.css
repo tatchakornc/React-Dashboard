@@ -1,0 +1,465 @@
+/* AddDevice.css */
+.add-device-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-radius: 20px;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.add-device-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.add-device-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.add-device-subtitle {
+  color: #64748b;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Step Indicator */
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.step-number.active {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.step-number.completed {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.step-number.pending {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 2px solid #e2e8f0;
+}
+
+.step-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-left: 8px;
+}
+
+.step-divider {
+  width: 50px;
+  height: 2px;
+  background: #e2e8f0;
+  margin: 0 15px;
+}
+
+.step-divider.completed {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+/* Input Methods */
+.input-methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.input-method {
+  padding: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #ffffff;
+}
+
+.input-method:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.input-method.active {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1d4ed8;
+}
+
+.input-method-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.input-method-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.input-method-desc {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* SN Input Form */
+.sn-input-form {
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  font-family: 'Monaco', 'Menlo', monospace;
+  letter-spacing: 1px;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input.sn-input {
+  text-transform: uppercase;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Device Info Display */
+.device-info-card {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 2px solid #bae6fd;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 30px;
+}
+
+.device-info-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.device-info-icon {
+  font-size: 48px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  border-radius: 20px;
+  color: white;
+  box-shadow: 0 8px 25px rgba(14, 165, 233, 0.3);
+}
+
+.device-info-details h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.device-info-details p {
+  color: #475569;
+  font-size: 14px;
+  margin: 2px 0;
+}
+
+.device-specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.spec-item {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  border: 1px solid rgba(186, 230, 253, 0.5);
+}
+
+.spec-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.spec-value {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+/* QR Scanner */
+.qr-scanner-section {
+  background: #ffffff;
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.qr-scanner-section.active {
+  border-color: #3b82f6;
+  background: #f8fafc;
+}
+
+.qr-scanner-placeholder {
+  color: #64748b;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.qr-scanner-container {
+  max-width: 300px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+  border: 2px solid #cbd5e1;
+}
+
+.btn-secondary:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+/* Loading States */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Success State */
+.success-container {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.success-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  display: block;
+  animation: bounce 1s ease-in-out;
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0,0,0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -20px, 0);
+  }
+  70% {
+    transform: translate3d(0, -10px, 0);
+  }
+  90% {
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+.success-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #10b981;
+  margin-bottom: 8px;
+}
+
+.success-message {
+  color: #64748b;
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+
+/* Error States */
+.error-message {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .add-device-container {
+    margin: 10px;
+    padding: 16px;
+  }
+  
+  .input-methods {
+    grid-template-columns: 1fr;
+  }
+  
+  .step-indicator {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .step-divider {
+    width: 2px;
+    height: 30px;
+    margin: 8px 0;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+  
+  .device-specs {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+}

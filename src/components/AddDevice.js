@@ -1,281 +1,580 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ref, get, push, set } from 'firebase/database';
+import React, { useState } from 'react';
+import { ref, get, push } from 'firebase/database';
 import { db } from '../firebase';
 import QRCodeScanner from './QRCodeScanner';
-import { getDefaultDashboardType } from '../config/deviceTypes';
-import './QRCodeScanner.css';
+import './AddDevice.css';
 
-const AddDevice = ({ currentUser, showToast, setCurrentPage, pendingDevice, setPendingDevice }) => {
-  const [deviceSN, setDeviceSN] = useState('');
+const AddDevice = ({ currentUser, showToast, setCurrentPage }) => {
+  const [serialNumber, setSerialNumber] = useState('');
+  const [deviceName, setDeviceName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [scanMode, setScanMode] = useState(false);
-  const [processingPending, setProcessingPending] = useState(false);
-  const [processedDevices, setProcessedDevices] = useState(new Set());
-  const [processingDevices, setProcessingDevices] = useState(new Set());
-  const isProcessingRef = useRef(false);
+  const [validatingSerialNumber, setValidatingSerialNumber] = useState(false);
+  const [serialNumberValid, setSerialNumberValid] = useState(null);
+  const [deviceInfo, setDeviceInfo] = useState(null);
+  const [step, setStep] = useState(1); // 1: Enter SN, 2: Device Info, 3: Success
+  const [availableSNs, setAvailableSNs] = useState([]);
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [inputMethod, setInputMethod] = useState('manual'); // 'manual' หรือ 'qr'
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await addDeviceWithSN(deviceSN);
+  // โหลด available SNs เมื่อ component mount
+  React.useEffect(() => {
+    loadAvailableSNs();
+  }, []);
+
+  const loadAvailableSNs = async () => {
+    try {
+      const snRef = ref(db, 'valid_sn');
+      const snapshot = await get(snRef);
+      
+      if (snapshot.exists()) {
+        const snData = snapshot.val();
+        const snList = Object.keys(snData);
+        setAvailableSNs(snList);
+        console.log('📋 Available SNs loaded:', snList);
+      } else {
+        console.log('📋 No SNs found in database');
+        setAvailableSNs([]);
+      }
+    } catch (error) {
+      console.error('Error loading available SNs:', error);
+    }
   };
 
-  const addDeviceWithSN = useCallback(async (sn) => {
-    console.log('🔥 addDeviceWithSN called with SN:', sn);
-    console.log('🔥 Current loading state:', loading);
-    console.log('🔥 Currently processing devices:', Array.from(processingDevices));
-    console.log('🔥 Call stack:', new Error().stack);
-    
+  // เช็ค Serial Number ว่าถูกต้องหรือไม่
+  const validateSerialNumber = async (sn) => {
     if (!sn.trim()) {
-      showToast('กรุณากรอก SN', 'error');
+      setSerialNumberValid(null);
+      setDeviceInfo(null);
       return;
     }
 
-    if (loading || processingDevices.has(sn)) {
-      console.log('⚠️ Already loading or processing this SN, skipping...');
-      return;
-    }
-
-    // เพิ่ม SN ลงใน processing list
-    setProcessingDevices(prev => {
-      console.log('🔒 Adding SN to processing list:', sn);
-      return new Set([...prev, sn]);
-    });
-    setLoading(true);
-    console.log('🔄 Starting device addition process...');
-
+    setValidatingSerialNumber(true);
+    
     try {
-      // ตรวจสอบว่ามีอุปกรณ์ SN นี้ในระบบของ user แล้วหรือไม่
-      const checkUserDevicesRef = ref(db, `devices/${currentUser.uid}`);
-      const userDevicesSnapshot = await get(checkUserDevicesRef);
+      // ลองหาทั้ง exact match และ case-insensitive
+      console.log('🔍 Checking SN:', sn);
       
-      if (userDevicesSnapshot.exists()) {
-        const existingDevices = userDevicesSnapshot.val();
-        const duplicateDevice = Object.values(existingDevices).find(device => device.sn === sn);
+      // วิธีที่ 1: ลองหา exact match
+      let snRef = ref(db, `valid_sn/${sn}`);
+      let snapshot = await get(snRef);
+      
+      console.log('📊 Exact match - Snapshot exists:', snapshot.exists());
+      
+      // วิธีที่ 2: ถ้าไม่เจอ ลองหาทั้ง database แล้วเปรียบเทียบ case-insensitive
+      if (!snapshot.exists()) {
+        console.log('� Trying case-insensitive search...');
+        const allSNsRef = ref(db, 'valid_sn');
+        const allSNsSnapshot = await get(allSNsRef);
         
-        if (duplicateDevice) {
-          showToast(`อุปกรณ์ SN: ${sn} มีอยู่ในระบบแล้ว`, 'error');
-          setLoading(false);
-          return;
+        if (allSNsSnapshot.exists()) {
+          const allSNs = allSNsSnapshot.val();
+          console.log('📋 All SNs in database:', Object.keys(allSNs));
+          
+          // หา SN ที่ตรงกัน (case-insensitive)
+          const matchingSN = Object.keys(allSNs).find(dbSN => 
+            dbSN.toLowerCase() === sn.toLowerCase()
+          );
+          
+          if (matchingSN) {
+            console.log('✅ Found matching SN (case-insensitive):', matchingSN);
+            snapshot = { exists: () => true, val: () => allSNs[matchingSN] };
+            // อัพเดท SN ให้ตรงกับใน database
+            setSerialNumber(matchingSN);
+          }
         }
       }
-
-      // ตรวจสอบ SN ใน valid_sn
-      const snRef = ref(db, `valid_sn/${sn}`);
-      const snSnapshot = await get(snRef);
       
-      if (!snSnapshot.exists()) {
-        showToast(`SN: ${sn} ไม่มีในระบบ กรุณาตรวจสอบ SN อุปกรณ์ของคุณ`, 'error');
-        setLoading(false);
-        // ลบ SN ออกจาก processing list
-        setProcessingDevices(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(sn);
-          return newSet;
-        });
-        return;
-      }
-
-      const snData = snSnapshot.val();
-      const type = snData.type || 'other';
-      const userDevicesRef = ref(db, `devices/${currentUser.uid}`);
-
-      // Auto-assign dashboard type based on device type
-      const defaultDashboardType = getDefaultDashboardType(type);
-      console.log('🎯 Auto-assigning dashboard type:', defaultDashboardType, 'for device type:', type);
-
-      if (type === 'relay4') {
-        // สำหรับ relay4: สร้าง 4 รีเลย์แยกกัน
-        console.log('🔧 Creating relay4 devices for SN:', sn);
-        const relayNames = snData.relays || {
-          relay1: 'รีเลย์ 1',
-          relay2: 'รีเลย์ 2', 
-          relay3: 'รีเลย์ 3',
-          relay4: 'รีเลย์ 4'
-        };
-
-        console.log('📋 Relay names:', relayNames);
-        console.log('🎯 About to create', Object.keys(relayNames).length, 'relays');
-
-        const promises = Object.entries(relayNames).map(async ([relayKey, relayName]) => {
-          console.log('➕ Creating relay:', relayKey, '-', relayName);
-          const deviceKey = `${sn}_${relayKey}`;
-          const deviceRef = ref(db, `devices/${currentUser.uid}/${deviceKey}`);
-          await set(deviceRef, {
-            sn: sn,
-            name: relayName,
-            relayKey,
-            type: 'relay4',
-            state: { on: false },
-            online: false,
-          });
-          
-          // Auto-assign dashboard type สำหรับ relay
-          const deviceTypesRef = ref(db, `device_types/${currentUser.uid}/${deviceKey}`);
-          await set(deviceTypesRef, defaultDashboardType);
-          console.log('✅ Auto-assigned dashboard type:', defaultDashboardType, 'to relay:', relayKey);
-          
-          return { key: deviceKey };
-        });
-
-        await Promise.all(promises);
-        console.log('✅ Successfully created', promises.length, 'relay devices with auto-assigned types');
+      if (snapshot.exists()) {
+        const snData = snapshot.val();
+        console.log('✅ SN Data found:', snData);
+        setSerialNumberValid(true);
+        setDeviceInfo(snData);
+        setDeviceName(snData.name || `${snData.type} ${sn.slice(-6)}`);
+        showToast(`✅ พบ Serial Number: ${snData.type}`, 'success');
       } else {
-        // อุปกรณ์ทั่วไป
-        const deviceRef = ref(db, `devices/${currentUser.uid}/${sn}`);
-        await set(deviceRef, {
-          sn: sn,
-          name: snData.name || 'อุปกรณ์ใหม่',
-          type,
-          state: { on: false },
-          online: false,
-        });
-        
-        // Auto-assign dashboard type
-        const deviceTypesRef = ref(db, `device_types/${currentUser.uid}/${sn}`);
-        await set(deviceTypesRef, defaultDashboardType);
-        console.log('✅ Auto-assigned dashboard type:', defaultDashboardType, 'to device:', sn);
+        console.log('❌ SN not found in database');
+        console.log('💡 Available SNs:', availableSNs);
+        setSerialNumberValid(false);
+        setDeviceInfo(null);
+        setDeviceName('');
+        showToast('❌ Serial Number ไม่ถูกต้องหรือไม่มีในระบบ', 'error');
       }
-
-      showToast('เพิ่มอุปกรณ์สำเร็จและกำหนดประเภท Dashboard อัตโนมัติแล้ว!', 'success');
-      setDeviceSN('');
-      setScanMode(false);
-      setCurrentPage('main'); // ไปที่หน้าหลัก
     } catch (error) {
-      console.error('Error adding device:', error);
-      showToast('เพิ่มอุปกรณ์ไม่สำเร็จ', 'error');
-    }
-
-    // ลบ SN ออกจาก processing list
-    setProcessingDevices(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(sn);
-      return newSet;
-    });
-    setLoading(false);
-  }, [loading, processingDevices, currentUser, showToast, setCurrentPage]);
-
-  // จัดการ auto-add device จาก QR Code
-  useEffect(() => {
-    console.log('🔄 useEffect triggered - pendingDevice:', pendingDevice, 'processingPending:', processingPending);
-    console.log('🔄 isProcessingRef.current:', isProcessingRef.current);
-    
-    if (pendingDevice && !processingPending && !processedDevices.has(pendingDevice.sn) && !isProcessingRef.current) {
-      isProcessingRef.current = true;
-      setProcessingPending(true);
-      console.log('🚀 Auto-adding device from QR Code:', pendingDevice);
-      console.log('📱 Device SN:', pendingDevice.sn);
-      
-      // เพิ่ม SN ลงใน processed list ทันที
-      setProcessedDevices(prev => new Set([...prev, pendingDevice.sn]));
-      
-      // เคลียร์ deviceSN ถ้ามีการตั้งค่าไว้
-      setDeviceSN('');
-      
-      // แสดงแจ้งเตือนและเพิ่มอุปกรณ์อัตโนมัติ
-      showToast(`🎯 กำลังเพิ่มอุปกรณ์: ${pendingDevice.name}`, 'info');
-      
-      // เพิ่มอุปกรณ์ด้วย SN จาก QR Code
-      addDeviceWithSN(pendingDevice.sn).finally(() => {
-        console.log('✅ Finished processing pending device');
-        // Clear pending device และ reset flag
-        setPendingDevice(null);
-        setProcessingPending(false);
-        isProcessingRef.current = false;
-      });
-    }
-  }, [pendingDevice, addDeviceWithSN, processingPending, processedDevices, showToast]);
-
-  const handleQRScanResult = (result) => {
-    console.log('QR Code Result:', result);
-    
-    // ถ้าเป็น URL ให้เด้งไป URL นั้น
-    if (result.startsWith('http://') || result.startsWith('https://')) {
-      console.log('QR Code contains URL, redirecting...');
-      window.location.href = result;
-      return;
+      console.error('Error validating SN:', error);
+      setSerialNumberValid(false);
+      setDeviceInfo(null);
+      showToast('เกิดข้อผิดพลาดในการตรวจสอบ Serial Number', 'error');
     }
     
-    // ถ้าเป็น SN ธรรมดา ให้เซ็ตและแจ้งให้กดเพิ่ม
-    setDeviceSN(result);
-    setScanMode(false);
-    showToast('สแกน QR Code สำเร็จ! กรุณากดเพิ่มอุปกรณ์', 'success');
+    setValidatingSerialNumber(false);
   };
 
-  const handleQRScanError = (error) => {
-    showToast(error, 'error');
-    setScanMode(false);
+  // เช็ค SN เมื่อผู้ใช้เลิกพิมพ์
+  const handleSerialNumberChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    setSerialNumber(value);
+    
+    // Debounce การเช็ค SN
+    if (window.snCheckTimeout) {
+      clearTimeout(window.snCheckTimeout);
+    }
+    
+    window.snCheckTimeout = setTimeout(() => {
+      validateSerialNumber(value);
+    }, 500);
+  };
+
+  // จัดการข้อมูลจาก QR Code
+  const handleQRCodeScan = (data) => {
+    if (data) {
+      console.log('📷 QR Code scanned:', data);
+      
+      // พยายามแยก SN จากข้อมูล QR
+      let scannedSN = data;
+      
+      // ถ้าเป็น URL ให้แยก SN ออกมา
+      if (data.includes('sn=')) {
+        const urlParams = new URLSearchParams(data.split('?')[1]);
+        scannedSN = urlParams.get('sn');
+      }
+      
+      // ถ้าเป็น JSON ให้แปลง
+      try {
+        const parsed = JSON.parse(data);
+        if (parsed.sn || parsed.serial_number) {
+          scannedSN = parsed.sn || parsed.serial_number;
+        }
+      } catch (e) {
+        // ไม่ใช่ JSON ใช้ข้อมูลดิบ
+      }
+      
+      setSerialNumber(scannedSN.toUpperCase());
+      setShowQRScanner(false);
+      setInputMethod('manual');
+      validateSerialNumber(scannedSN.toUpperCase());
+      showToast(`📷 สแกน QR Code สำเร็จ: ${scannedSN}`, 'success');
+    }
+  };
+
+  // จัดการปิด QR Scanner
+  const handleQRScannerClose = () => {
+    setShowQRScanner(false);
+    setInputMethod('manual');
+  };
+
+  // เปิด QR Scanner
+  const openQRScanner = () => {
+    setInputMethod('qr');
+    setShowQRScanner(true);
+  };
+
+  // ไปขั้นตอนต่อไป
+  const nextStep = () => {
+    if (step === 1 && serialNumberValid) {
+      setStep(2);
+    }
+  };
+
+  // กลับขั้นตอนก่อนหน้า
+  const prevStep = () => {
+    if (step === 2) {
+      setStep(1);
+    }
+  };
+
+  // ลงทะเบียนอุปกรณ์
+  const registerDevice = async () => {
+    if (!serialNumberValid || !deviceInfo) {
+      showToast('กรุณาตรวจสอบ Serial Number ให้ถูกต้อง', 'error');
+      return;
+    }
+
+    if (!deviceName.trim()) {
+      showToast('กรุณากรอกชื่ออุปกรณ์', 'error');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // สร้างการกำหนดค่าอุปกรณ์ตามประเภท
+      const getDeviceConfig = (type) => {
+        switch (type.toLowerCase()) {
+          case '4relay':
+          case 'relay4':
+            return {
+              pins: [
+                { id: 'relay1', name: 'Relay 1', pin: 25, state: false },
+                { id: 'relay2', name: 'Relay 2', pin: 26, state: false },
+                { id: 'relay3', name: 'Relay 3', pin: 27, state: false },
+                { id: 'relay4', name: 'Relay 4', pin: 14, state: false }
+              ],
+              sensors: [
+                { id: 'temp', name: 'อุณหภูมิ', value: '--', unit: '°C' },
+                { id: 'humidity', name: 'ความชื้น', value: '--', unit: '%' },
+                { id: 'heat_index', name: 'ดัชนีความร้อน', value: '--', unit: '°C' }
+              ]
+            };
+          
+          case '8relay':
+          case 'relay8':
+            return {
+              pins: [
+                { id: 'relay1', name: 'Relay 1', pin: 25, state: false },
+                { id: 'relay2', name: 'Relay 2', pin: 26, state: false },
+                { id: 'relay3', name: 'Relay 3', pin: 27, state: false },
+                { id: 'relay4', name: 'Relay 4', pin: 14, state: false },
+                { id: 'relay5', name: 'Relay 5', pin: 12, state: false },
+                { id: 'relay6', name: 'Relay 6', pin: 13, state: false },
+                { id: 'relay7', name: 'Relay 7', pin: 32, state: false },
+                { id: 'relay8', name: 'Relay 8', pin: 33, state: false }
+              ]
+            };
+          
+          case 'led':
+          case 'lighting':
+            return {
+              pins: [
+                { id: 'led1', name: 'LED 1', pin: 2, state: false },
+                { id: 'led2', name: 'LED 2', pin: 4, state: false },
+                { id: 'led3', name: 'LED 3', pin: 5, state: false }
+              ]
+            };
+          
+          case 'sensor':
+          case 'temperature':
+            return {
+              sensors: [
+                { id: 'temp', name: 'อุณหภูมิ', value: '--', unit: '°C' },
+                { id: 'humidity', name: 'ความชื้น', value: '--', unit: '%' }
+              ]
+            };
+          
+          default:
+            return { pins: [], sensors: [] };
+        }
+      };
+
+      const config = getDeviceConfig(deviceInfo.type);
+
+      // สร้างข้อมูลอุปกรณ์
+      const deviceData = {
+        id: serialNumber,
+        device_id: serialNumber,
+        serial_number: serialNumber,
+        name: deviceName.trim(),
+        type: deviceInfo.type,
+        device_type: deviceInfo.type,
+        status: 'offline',
+        createdAt: Date.now(),
+        createdBy: currentUser.uid,
+        lastUpdate: null,
+        validSN: true,
+        ...config
+      };
+
+      // เพิ่มลง Firebase
+      await push(ref(db, `mqtt_devices/${currentUser.uid}`), deviceData);
+      
+      showToast(`🎉 ลงทะเบียนอุปกรณ์ "${deviceName}" สำเร็จ!`, 'success');
+      setStep(3);
+      
+    } catch (error) {
+      console.error('Error registering device:', error);
+      showToast('❌ เกิดข้อผิดพลาดในการลงทะเบียนอุปกรณ์', 'error');
+    }
+
+    setLoading(false);
+  };
+
+  // รีเซ็ตและเริ่มใหม่
+  const resetForm = () => {
+    setSerialNumber('');
+    setDeviceName('');
+    setSerialNumberValid(null);
+    setDeviceInfo(null);
+    setStep(1);
   };
 
   return (
-    <div className="add-device">
-      <header className="header">
-        <div className="header-left">
-          <h1>เพิ่มอุปกรณ์ใหม่</h1>
-          <p>กรอก SN หรือสแกน QR Code เพื่อเพิ่มอุปกรณ์</p>
+    <div className="add-device-container">
+      <div className="add-device-header">
+        <h1 className="add-device-title">📱 เพิ่มอุปกรณ์ใหม่</h1>
+        <p className="add-device-subtitle">ลงทะเบียนอุปกรณ์ด้วย Serial Number</p>
+        
+        {/* Progress Steps */}
+        <div className="progress-steps">
+          <div className={`step ${step >= 1 ? 'active' : ''}`}>
+            <span className="step-number">1</span>
+            <span className="step-label">ตรวจสอบ Serial Number</span>
+          </div>
+          <div className={`step ${step >= 2 ? 'active' : ''}`}>
+            <span className="step-number">2</span>
+            <span className="step-label">ข้อมูลอุปกรณ์</span>
+          </div>
+          <div className={`step ${step >= 3 ? 'active' : ''}`}>
+            <span className="step-number">3</span>
+            <span className="step-label">เสร็จสิ้น</span>
+          </div>
         </div>
-      </header>
-      
-      <div className="settings-section">
-        {!scanMode ? (
-          <>
-            {/* ปุ่มเลือกวิธีการเพิ่มอุปกรณ์ */}
-            <div className="add-device-options">
-              <button 
-                type="button"
-                className="btn btn-secondary scan-btn"
-                onClick={() => setScanMode(true)}
-                disabled={loading || !!pendingDevice}
-              >
-                <i className="fas fa-qrcode"></i>
-                สแกน QR Code
-              </button>
-              <div className="divider"><span>หรือ</span></div>
-            </div>
+      </div>
 
-            {/* ฟอร์มกรอก SN */}
-            <form onSubmit={handleSubmit} className="settings-form">
-              <div className="form-group">
-                <label htmlFor="deviceSN">SN อุปกรณ์</label>
-                <input
-                  type="text"
-                  id="deviceSN"
-                  value={deviceSN}
-                  onChange={(e) => setDeviceSN(e.target.value)}
-                  placeholder="กรอก Serial Number"
-                  required
-                  disabled={loading || !!pendingDevice}
-                />
-              </div>
-              
-              <button type="submit" className="btn btn-primary" disabled={loading || !!pendingDevice}>
-                {loading || pendingDevice ? 'กำลังเพิ่ม...' : 'เพิ่มอุปกรณ์'}
-              </button>
-            </form>
-          </>
-        ) : (
-          <>
-            {/* QR Code Scanner */}
-            <div className="qr-scanner-section">
-              <QRCodeScanner
-                onScanResult={handleQRScanResult}
-                onError={handleQRScanError}
-                isActive={scanMode}
-              />
-              
-              <div className="scanner-controls">
-                <button 
+      <div className="add-device-content">
+        {step === 1 && (
+          <div className="step-content">
+            <h2>🔍 ตรวจสอบ Serial Number</h2>
+            
+            {/* Input Method Selection */}
+            <div className="input-method-selection">
+              <h3>📝 เลือกวิธีการป้อน Serial Number</h3>
+              <div className="method-buttons">
+                <button
                   type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setScanMode(false)}
-                  disabled={loading || !!pendingDevice}
+                  className={`method-btn ${inputMethod === 'manual' ? 'active' : ''}`}
+                  onClick={() => setInputMethod('manual')}
                 >
-                  <i className="fas fa-arrow-left"></i>
-                  กลับไปกรอก SN
+                  <i className="fas fa-keyboard"></i>
+                  <span>กรอกเอง</span>
+                </button>
+                
+                <button
+                  type="button"
+                  className={`method-btn ${inputMethod === 'qr' ? 'active' : ''}`}
+                  onClick={openQRScanner}
+                >
+                  <i className="fas fa-qrcode"></i>
+                  <span>สแกน QR Code</span>
                 </button>
               </div>
             </div>
-          </>
+
+            {/* Manual Input */}
+            {inputMethod === 'manual' && !showQRScanner && (
+              <div className="form-group">
+                <label htmlFor="serialNumber" className="form-label">
+                  <i className="fas fa-barcode"></i>
+                  Serial Number *
+                </label>
+                <input
+                  id="serialNumber"
+                  type="text"
+                  className={`form-input ${serialNumberValid === true ? 'valid' : serialNumberValid === false ? 'invalid' : ''}`}
+                  value={serialNumber}
+                  onChange={handleSerialNumberChange}
+                  placeholder="กรอก Serial Number ของอุปกรณ์"
+                  disabled={validatingSerialNumber}
+                />
+                
+                {/* Available SNs Helper */}
+                {availableSNs.length > 0 && (
+                  <div className="sn-helper">
+                    <small>💡 SN ที่มีในระบบ ({availableSNs.length} รายการ):</small>
+                    <div className="sn-list">
+                      {availableSNs.map(sn => (
+                        <span 
+                          key={sn} 
+                          className="sn-item"
+                          onClick={() => {
+                            setSerialNumber(sn);
+                            validateSerialNumber(sn);
+                          }}
+                        >
+                          {sn}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {validatingSerialNumber && (
+                  <div className="validation-message checking">
+                    <i className="fas fa-spinner fa-spin"></i>
+                    กำลังตรวจสอบ...
+                  </div>
+                )}
+                
+                {serialNumberValid === true && deviceInfo && (
+                  <div className="validation-message valid">
+                    <i className="fas fa-check-circle"></i>
+                    Serial Number ถูกต้อง - {deviceInfo.type}
+                  </div>
+                )}
+                
+                {serialNumberValid === false && (
+                  <div className="validation-message invalid">
+                    <i className="fas fa-times-circle"></i>
+                    Serial Number ไม่ถูกต้องหรือไม่มีในระบบ
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* QR Scanner */}
+            {showQRScanner && (
+              <div className="qr-scanner-container">
+                <h3>📷 สแกน QR Code</h3>
+                <QRCodeScanner 
+                  onScanResult={handleQRCodeScan}
+                  isActive={showQRScanner}
+                />
+                <div className="qr-scanner-help">
+                  <p>📱 นำกล้องไปส่องที่ QR Code บนอุปกรณ์หรือบรรจุภัณฑ์</p>
+                  <button 
+                    type="button" 
+                    className="btn-cancel-qr"
+                    onClick={handleQRScannerClose}
+                  >
+                    ❌ ยกเลิกการสแกน
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {deviceInfo && (
+              <div className="device-preview">
+                <h3>📋 ข้อมูลอุปกรณ์</h3>
+                <div className="preview-content">
+                  <div className="preview-item">
+                    <strong>Serial Number:</strong> {serialNumber}
+                  </div>
+                  <div className="preview-item">
+                    <strong>ประเภท:</strong> {deviceInfo.type}
+                  </div>
+                  <div className="preview-item">
+                    <strong>ชื่อเริ่มต้น:</strong> {deviceInfo.name || 'ไม่ระบุ'}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="form-actions">
+              <button 
+                type="button" 
+                className="btn-secondary"
+                onClick={() => setCurrentPage('main')}
+              >
+                <i className="fas fa-arrow-left"></i>
+                ยกเลิก
+              </button>
+              
+              <button 
+                type="button" 
+                className="btn-primary"
+                onClick={nextStep}
+                disabled={!serialNumberValid || validatingSerialNumber}
+              >
+                <i className="fas fa-arrow-right"></i>
+                ถัดไป
+              </button>
+            </div>
+          </div>
         )}
+
+        {step === 2 && (
+          <div className="step-content">
+            <h2>📝 ข้อมูลอุปกรณ์</h2>
+            
+            <div className="form-group">
+              <label htmlFor="deviceName" className="form-label">
+                <i className="fas fa-tag"></i>
+                ชื่ออุปกรณ์ *
+              </label>
+              <input
+                id="deviceName"
+                type="text"
+                className="form-input"
+                value={deviceName}
+                onChange={(e) => setDeviceName(e.target.value)}
+                placeholder="ตั้งชื่ออุปกรณ์ที่เข้าใจง่าย"
+              />
+            </div>
+
+            <div className="device-summary">
+              <h3>📋 สรุปข้อมูล</h3>
+              <div className="summary-content">
+                <div className="summary-item">
+                  <strong>Serial Number:</strong> {serialNumber}
+                </div>
+                <div className="summary-item">
+                  <strong>ประเภทอุปกรณ์:</strong> {deviceInfo?.type}
+                </div>
+                <div className="summary-item">
+                  <strong>ชื่ออุปกรณ์:</strong> {deviceName || 'ยังไม่ได้ตั้งชื่อ'}
+                </div>
+              </div>
+            </div>
+
+            <div className="form-actions">
+              <button 
+                type="button" 
+                className="btn-secondary"
+                onClick={prevStep}
+                disabled={loading}
+              >
+                <i className="fas fa-arrow-left"></i>
+                ย้อนกลับ
+              </button>
+              
+              <button 
+                type="button" 
+                className="btn-primary"
+                onClick={registerDevice}
+                disabled={loading || !deviceName.trim()}
+              >
+                {loading ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i>
+                    กำลังลงทะเบียน...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-check"></i>
+                    ลงทะเบียนอุปกรณ์
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="step-content success">
+            <div className="success-icon">🎉</div>
+            <h2>เสร็จสิ้น!</h2>
+            <p>ลงทะเบียนอุปกรณ์ "{deviceName}" สำเร็จแล้ว</p>
+            <p>Serial Number: {serialNumber}</p>
+            
+            <div className="form-actions">
+              <button 
+                type="button" 
+                className="btn-secondary"
+                onClick={resetForm}
+              >
+                <i className="fas fa-plus"></i>
+                เพิ่มอุปกรณ์อีก
+              </button>
+              
+              <button 
+                type="button" 
+                className="btn-primary"
+                onClick={() => setCurrentPage('main')}
+              >
+                <i className="fas fa-home"></i>
+                ไปยัง Dashboard
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="add-device-info">
+        <h3>💡 คำแนะนำ</h3>
+        <ul>
+          <li>Serial Number ต้องมีอยู่ในระบบเท่านั้น</li>
+          <li>ตรวจสอบ Serial Number บนตัวอุปกรณ์หรือบรรจุภัณฑ์</li>
+          <li>แต่ละ Serial Number สามารถลงทะเบียนได้เพียงครั้งเดียว</li>
+          <li>หากมีปัญหา กรุณาติดต่อผู้ดูแลระบบ</li>
+        </ul>
       </div>
     </div>
   );

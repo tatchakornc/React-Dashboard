@@ -1,0 +1,155 @@
+1755069973: mosquitto version 2.0.22 starting
+1755069973: Config loaded from /mosquitto/config/mosquitto.conf.
+1755069973: Opening ipv4 listen socket on port 1883.
+1755069973: Opening ipv6 listen socket on port 1883.
+1755069973: Opening websockets listen socket on port 8083.
+1755069973: mosquitto version 2.0.22 running
+1755070047: New connection from 162.55.180.156:44000 on port 1883.
+1755070047: New connection from 162.55.180.156:27096 on port 1883.
+1755070047: Client <unknown> disconnected due to protocol error.
+1755070048: Client <unknown> disconnected due to protocol error.
+1755070048: New connection from 162.55.180.156:23033 on port 1883.
+1755070048: Client <unknown> disconnected due to protocol error.
+1755070048: New connection from 162.55.180.156:41260 on port 1883.
+1755070048: Client <unknown> disconnected due to protocol error.
+1755070053: New connection from 162.55.180.156:23302 on port 1883.
+1755070053: New connection from 162.55.180.156:20433 on port 1883.
+1755070053: Client <unknown> disconnected due to protocol error.
+1755070083: Client <unknown> disconnected due to protocol error.
+1755070083: New connection from 162.55.180.156:18143 on port 1883.
+1755070083: Client <unknown> disconnected due to protocol error.
+1755070083: New connection from 162.55.180.156:42484 on port 1883.
+1755070083: Client <unknown> disconnected due to protocol error.
+1755071663: New connection from 162.55.180.156:32803 on port 1883.
+1755071663: New client connected from 162.55.180.156:32803 as ESP32_AA5510_725e (p2, c1, k60).
+1755071774: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755071992: New connection from 162.55.180.156:61363 on port 1883.
+1755071992: New client connected from 162.55.180.156:61363 as auto-1CF2A2BB-5C88-8262-8DBE-64832B6B8FA1 (p2, c1, k60).
+1755072001: New connection from 162.55.180.156:39762 on port 1883.
+1755072001: New client connected from 162.55.180.156:39762 as auto-9504D324-C701-4A06-AC1B-15E4CD09FB7C (p2, c1, k60).
+1755072001: Client auto-9504D324-C701-4A06-AC1B-15E4CD09FB7C disconnected.
+1755072021: New connection from 162.55.180.156:57017 on port 1883.
+1755072021: New client connected from 162.55.180.156:57017 as auto-7F1AFF0A-AD85-B7CE-8F69-9548FE38BA13 (p2, c1, k60).
+1755072021: Client auto-7F1AFF0A-AD85-B7CE-8F69-9548FE38BA13 disconnected.
+1755072037: New connection from 162.55.180.156:34846 on port 1883.
+1755072037: New client connected from 162.55.180.156:34846 as auto-6A188305-4865-DD9D-4668-CA72348005CA (p2, c1, k60).
+1755072037: Client auto-6A188305-4865-DD9D-4668-CA72348005CA disconnected.
+1755072047: New connection from 162.55.180.156:33252 on port 1883.
+1755072047: New client connected from 162.55.180.156:33252 as auto-4EF38B34-A69D-2D49-DA5E-63BD06BF8ACB (p2, c1, k60).
+1755072047: Client auto-4EF38B34-A69D-2D49-DA5E-63BD06BF8ACB disconnected.
+1755072059: New connection from 162.55.180.156:35578 on port 1883.
+1755072059: New client connected from 162.55.180.156:35578 as auto-677B1C5C-8520-5231-F07E-0776A6DA03AB (p2, c1, k60).
+1755072059: Client auto-677B1C5C-8520-5231-F07E-0776A6DA03AB disconnected.
+1755072398: New client connected from ::ffff:162.55.180.156:53288 as mqttjs_97435d86 (p2, c1, k60).
+1755072509: Client mqttjs_97435d86 disconnected.
+1755072686: New client connected from ::ffff:162.55.180.156:63885 as mqttjs_5cf5d3f4 (p2, c1, k60).
+1755072827: Client mqttjs_5cf5d3f4 disconnected.
+1755073038: New client connected from ::ffff:162.55.180.156:28628 as mqttjs_5a9ad78d (p2, c1, k60).
+1755073108: Client mqttjs_5a9ad78d disconnected.
+1755073111: New client connected from ::ffff:162.55.180.156:41138 as mqttjs_ff9336d4 (p2, c1, k60).
+1755073115: Client mqttjs_ff9336d4 disconnected.
+1755073168: Client ESP32_AA5510_725e has exceeded timeout, disconnecting.
+1755073273: New connection from 162.55.180.156:44167 on port 1883.
+1755073273: New client connected from 162.55.180.156:44167 as ESP32_AA5510_607b (p2, c1, k60).
+1755073279: New client connected from ::ffff:162.55.180.156:48885 as mqttjs_66ce4a51 (p2, c1, k60).
+1755073575: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755074161: Client mqttjs_66ce4a51 disconnected.
+1755074167: New client connected from ::ffff:162.55.180.156:45177 as mqttjs_8db3f8db (p2, c1, k60).
+1755074171: Client mqttjs_8db3f8db disconnected.
+1755074188: New client connected from ::ffff:162.55.180.156:38406 as mqttjs_2e7c324d (p2, c1, k60).
+1755074208: Client mqttjs_2e7c324d disconnected.
+1755074221: New client connected from ::ffff:162.55.180.156:28472 as mqttjs_fe30c826 (p2, c1, k60).
+1755074231: Client mqttjs_fe30c826 disconnected.
+1755074410: New client connected from ::ffff:162.55.180.156:23990 as mqttjs_a6eaf59d (p2, c1, k60).
+1755074411: Client mqttjs_a6eaf59d disconnected.
+1755074544: New client connected from ::ffff:162.55.180.156:17647 as mqttjs_6895bf04 (p2, c1, k60).
+1755074548: Client mqttjs_6895bf04 disconnected.
+1755074556: New client connected from ::ffff:162.55.180.156:22486 as mqttjs_fbe9eade (p2, c1, k60, u'test').
+1755074568: Client mqttjs_fbe9eade disconnected.
+1755075376: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755075643: New client connected from ::ffff:162.55.180.156:25184 as mqttjs_3a873d94 (p2, c1, k60).
+1755075673: Client mqttjs_3a873d94 disconnected.
+1755075676: New client connected from ::ffff:162.55.180.156:39169 as mqttjs_dc0796db (p2, c1, k60).
+1755075748: Client mqttjs_dc0796db closed its connection.
+1755076078: New client connected from ::ffff:162.55.180.156:58400 as mqttjs_49911ec1 (p2, c1, k60).
+1755076094: Client mqttjs_49911ec1 disconnected.
+1755076311: New client connected from ::ffff:162.55.180.156:59212 as mqttjs_a6f1ae7f (p2, c1, k60).
+1755076315: Client mqttjs_a6f1ae7f disconnected.
+1755076319: New client connected from ::ffff:162.55.180.156:21457 as mqttjs_276a0fbf (p2, c1, k60).
+1755076319: Client mqttjs_276a0fbf disconnected.
+1755076342: New client connected from ::ffff:162.55.180.156:25233 as mqttjs_b93a94e0 (p2, c1, k60).
+1755076353: Client mqttjs_b93a94e0 disconnected.
+1755076560: New client connected from ::ffff:162.55.180.156:42158 as mqttjs_22d06999 (p2, c1, k60).
+1755076568: Client mqttjs_22d06999 disconnected.
+1755076671: mosquitto version 2.0.22 terminating
+1755076671: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755078919: mosquitto version 2.0.22 starting
+1755078919: Config loaded from /mosquitto/config/mosquitto.conf.
+1755078919: Opening ipv4 listen socket on port 1883.
+1755078919: Opening ipv6 listen socket on port 1883.
+1755078919: Opening websockets listen socket on port 8083.
+1755078919: mosquitto version 2.0.22 running
+1755078955: New client connected from ::ffff:192.168.65.1:59767 as mqttjs_39e03a6f (p2, c1, k60).
+1755078955: New connection from 192.168.65.1:23599 on port 1883.
+1755078955: New client connected from 192.168.65.1:23599 as ESP32_AA5510_4b42 (p2, c1, k60).
+1755079151: New connection from 192.168.65.1:29112 on port 1883.
+1755079151: New client connected from 192.168.65.1:29112 as ESP32_AA5510_f10a (p2, c1, k60).
+1755079153: Client ESP32_AA5510_4b42 closed its connection.
+1755079559: New connection from 192.168.65.1:54834 on port 1883.
+1755079559: New client connected from 192.168.65.1:54834 as ESP32_AA5510_ff8 (p2, c1, k60).
+1755079560: Client ESP32_AA5510_f10a closed its connection.
+1755079592: Client mqttjs_39e03a6f disconnected.
+1755079614: New client connected from ::ffff:192.168.65.1:32056 as mqttjs_17ad7142 (p2, c1, k60).
+1755079786: Client mqttjs_17ad7142 disconnected.
+1755079786: New client connected from ::ffff:192.168.65.1:44945 as mqttjs_3c7ff9d3 (p2, c1, k60).
+1755079794: Client mqttjs_3c7ff9d3 disconnected.
+1755079822: New client connected from ::ffff:192.168.65.1:46761 as mqttjs_a5df936a (p2, c1, k60).
+1755079983: Client ESP32_AA5510_ff8 closed its connection.
+1755079983: New connection from 192.168.65.1:50615 on port 1883.
+1755079983: New client connected from 192.168.65.1:50615 as ESP32_AA5510_1593 (p2, c1, k60).
+1755079993: New client connected from ::ffff:192.168.65.1:26989 as device_registration_service_bf6dbfba (p2, c1, k60).
+1755080006: Client mqttjs_a5df936a disconnected.
+1755080013: Client device_registration_service_bf6dbfba closed its connection.
+1755080015: New client connected from ::ffff:192.168.65.1:60968 as device_registration_service_a3680910 (p2, c1, k60).
+1755080056: Client device_registration_service_a3680910 closed its connection.
+1755080057: New client connected from ::ffff:192.168.65.1:56111 as device_registration_service_fecb731f (p2, c1, k60).
+1755080619: Client device_registration_service_fecb731f closed its connection.
+1755080621: New client connected from ::ffff:192.168.65.1:59549 as device_registration_service_9ea1346d (p2, c1, k60).
+1755080720: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755080830: New client connected from ::ffff:192.168.65.1:55898 as device_registration_service_072deced (p2, c1, k60).
+1755080881: Client device_registration_service_9ea1346d closed its connection.
+1755080881: Client device_registration_service_072deced closed its connection.
+1755081103: New client connected from ::ffff:192.168.65.1:60134 as mqttjs_f54cb429 (p2, c1, k60).
+1755081114: Client mqttjs_f54cb429 disconnected.
+1755081368: New client connected from ::ffff:192.168.65.1:43341 as mqttjs_d7ea239c (p2, c1, k60).
+1755081369: Client mqttjs_d7ea239c disconnected.
+1755081405: New client connected from ::ffff:192.168.65.1:36590 as mqttjs_233a4962 (p2, c1, k60).
+1755081420: Client mqttjs_233a4962 closed its connection.
+1755082498: Client ESP32_AA5510_1593 has exceeded timeout, disconnecting.
+1755082521: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755090564: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755092422: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755094227: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755096076: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755097889: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755099740: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755101550: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755103398: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755105212: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755107176: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755109798: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755111652: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755113460: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755115307: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755117122: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755118975: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755120781: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755122629: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755124444: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755126292: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755129413: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755134504: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755137221: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755139021: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755140822: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1755142623: Saving in-memory database to /mosquitto/data//mosquitto.db.

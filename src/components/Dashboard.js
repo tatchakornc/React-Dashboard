@@ -3,10 +3,10 @@ import Sidebar from './Sidebar';
 import MainDashboard from './MainDashboard';
 import Settings from './Settings';
 import AddDevice from './AddDevice';
-import DatabaseManagement from './DatabaseManagement';
 import UsersManagement from './UsersManagement';
 import QRCodeGenerator from './QRCodeGenerator';
-import RealTimeDashboard from './RealTimeDashboard';
+import MQTTDashboard from './MQTTDashboard';
+import DatabaseManagement from './DatabaseManagement';
 import './Dashboard.css';
 
 const Dashboard = ({ currentUser, userRole, showToast, pendingDevice, setPendingDevice }) => {
@@ -23,7 +23,8 @@ const Dashboard = ({ currentUser, userRole, showToast, pendingDevice, setPending
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'main':
-        return <RealTimeDashboard user={currentUser} showToast={showToast} />;
+      case 'dashboard':
+        return <MQTTDashboard currentUser={currentUser} showToast={showToast} />;
       case 'settings':
         return <Settings currentUser={currentUser} showToast={showToast} />;
       case 'addDevice':
@@ -39,13 +40,13 @@ const Dashboard = ({ currentUser, userRole, showToast, pendingDevice, setPending
       case 'database':
         return userRole === 'owner' || userRole === 'admin' ? 
           <DatabaseManagement showToast={showToast} /> : 
-          <RealTimeDashboard user={currentUser} showToast={showToast} />;
+          <MQTTDashboard currentUser={currentUser} showToast={showToast} />;
       case 'users':
         return userRole === 'owner' ? 
           <UsersManagement showToast={showToast} userRole={userRole} /> : 
-          <RealTimeDashboard user={currentUser} showToast={showToast} />;
+          <MQTTDashboard currentUser={currentUser} showToast={showToast} />;
       default:
-        return <RealTimeDashboard user={currentUser} showToast={showToast} />;
+        return <MQTTDashboard currentUser={currentUser} showToast={showToast} />;
     }
   };
 

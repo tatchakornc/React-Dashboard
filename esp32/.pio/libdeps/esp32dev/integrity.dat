@@ -1,6 +1,6 @@
-ArduinoJson@^7.0.4
 Adafruit Unified Sensor@^1.1.14
-DHT sensor library@^1.4.6
-WiFi
 tzapu/WiFiManager@^2.0.17
-mobizt/Firebase Arduino Client Library for ESP8266 and ESP32@^4.4.14
+DHT sensor library@^1.4.6
+knolleary/PubSubClient@^2.8
+WiFi
+ArduinoJson@^7.0.4

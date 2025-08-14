@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # Eclipse Mosquitto MQTT Broker
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: mosquitto-broker
+    restart: unless-stopped
+    ports:
+      - "1883:1883"          # MQTT port
+      - "8083:8083"          # WebSocket port
+      - "9001:9001"          # WebSocket Secure port
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    environment:
+      - MOSQUITTO_USERNAME=admin
+      - MOSQUITTO_PASSWORD=password
+    command: mosquitto -c /mosquitto/config/mosquitto.conf
+
+  # MQTT Explorer (Web UI)
+  mqtt-explorer:
+    image: smeagolworms4/mqtt-explorer
+    container_name: mqtt-explorer
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - HTTP_PORT=4000
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+    depends_on:
+      - mosquitto
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:

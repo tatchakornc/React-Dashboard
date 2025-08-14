@@ -1,116 +1,143 @@
-import React, { useState } from 'react';
-import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import { ref, get, set } from 'firebase/database';
+import { db, auth } from '../firebase';
+import { updatePassword } from 'firebase/auth';
 
 const Settings = ({ currentUser, showToast }) => {
-  const [formData, setFormData] = useState({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+  const [settings, setSettings] = useState({
+    theme: 'light',
+    notifications: true,
+    autoRefresh: true,
+    refreshInterval: 5000
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  useEffect(() => {
+    loadSettings();
+  }, [currentUser?.uid]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (formData.newPassword !== formData.confirmPassword) {
-      showToast('รหัสผ่านใหม่ไม่ตรงกัน', 'error');
-      return;
-    }
-
-    if (formData.newPassword.length < 6) {
-      showToast('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร', 'error');
-      return;
-    }
-
-    setLoading(true);
+  const loadSettings = async () => {
+    if (!currentUser?.uid) return;
 
     try {
-      // Re-authenticate user
-      const credential = EmailAuthProvider.credential(currentUser.email, formData.oldPassword);
-      await reauthenticateWithCredential(currentUser, credential);
+      const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+      const snapshot = await get(settingsRef);
       
-      // Update password
-      await updatePassword(currentUser, formData.newPassword);
-      
-      showToast('เปลี่ยนรหัสผ่านสำเร็จ');
-      setFormData({
-        oldPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-    } catch (error) {
-      console.error('Error changing password:', error);
-      if (error.code === 'auth/wrong-password') {
-        showToast('รหัสผ่านเดิมไม่ถูกต้อง', 'error');
-      } else {
-        showToast('เปลี่ยนรหัสผ่านไม่สำเร็จ', 'error');
+      if (snapshot.exists()) {
+        setSettings({ ...settings, ...snapshot.val() });
       }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+      showToast('❌ เกิดข้อผิดพลาดในการโหลดการตั้งค่า', 'error');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
+  const saveSettings = async () => {
+    if (!currentUser?.uid) return;
+
+    try {
+      const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+      await set(settingsRef, settings);
+      showToast('✅ บันทึกการตั้งค่าสำเร็จ');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      showToast('❌ เกิดข้อผิดพลาดในการบันทึกการตั้งค่า', 'error');
+    }
+  };
+
+  const handleSettingChange = (key, value) => {
+    setSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  if (loading) {
+    return null;
+  }
+
   return (
-    <div className="settings">
-      <header className="header">
-        <div className="header-left">
-          <h1>การตั้งค่า</h1>
-          <p>เปลี่ยนรหัสผ่านบัญชีผู้ใช้ของคุณ</p>
+    <div className="settings-container">
+      <div className="settings-header">
+        <h2>⚙️ การตั้งค่า</h2>
+        <p>ปรับแต่งการใช้งานตามความต้องการ</p>
+      </div>
+      <div className="settings-content">
+        <div className="settings-section">
+          <h3>🎨 การแสดงผล</h3>
+          <div className="setting-item">
+            <label>ธีม</label>
+            <select 
+              value={settings.theme}
+              onChange={(e) => handleSettingChange('theme', e.target.value)}
+            >
+              <option value="light">สว่าง</option>
+              <option value="dark">มืด</option>
+              <option value="auto">อัตโนมัติ</option>
+            </select>
+          </div>
         </div>
-      </header>
-      
-      <div className="settings-section">
-        <form onSubmit={handleSubmit} className="settings-form">
-          <div className="form-group">
-            <label htmlFor="oldPassword">รหัสผ่านเดิม</label>
-            <input
-              type="password"
-              id="oldPassword"
-              name="oldPassword"
-              value={formData.oldPassword}
-              onChange={handleInputChange}
-              required
-            />
+        <div className="settings-section">
+          <h3>🔔 การแจ้งเตือน</h3>
+          <div className="setting-item">
+            <label>
+              <input
+                type="checkbox"
+                checked={settings.notifications}
+                onChange={(e) => handleSettingChange('notifications', e.target.checked)}
+              />
+              เปิดการแจ้งเตือน
+            </label>
           </div>
-          
-          <div className="form-group">
-            <label htmlFor="newPassword">รหัสผ่านใหม่</label>
-            <input
-              type="password"
-              id="newPassword"
-              name="newPassword"
-              value={formData.newPassword}
-              onChange={handleInputChange}
-              required
-            />
+        </div>
+        <div className="settings-section">
+          <h3>🔄 การอัปเดต</h3>
+          <div className="setting-item">
+            <label>
+              <input
+                type="checkbox"
+                checked={settings.autoRefresh}
+                onChange={(e) => handleSettingChange('autoRefresh', e.target.checked)}
+              />
+              อัปเดตข้อมูลอัตโนมัติ
+            </label>
           </div>
-          
-          <div className="form-group">
-            <label htmlFor="confirmPassword">ยืนยันรหัสผ่านใหม่</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              required
-            />
+          {settings.autoRefresh && (
+            <div className="setting-item">
+              <label>ความถี่ในการอัปเดต (วินาที)</label>
+              <select 
+                value={settings.refreshInterval}
+                onChange={(e) => handleSettingChange('refreshInterval', parseInt(e.target.value))}
+              >
+                <option value={1000}>1 วินาที</option>
+                <option value={5000}>5 วินาที</option>
+                <option value={10000}>10 วินาที</option>
+                <option value={30000}>30 วินาที</option>
+              </select>
+            </div>
+          )}
+          <div className="settings-section">
+            <h3>👤 ข้อมูลผู้ใช้</h3>
+            <div className="setting-item">
+              <label>อีเมล</label>
+              <input type="text" value={currentUser?.email || ''} disabled />
+            </div>
+            <div className="setting-item">
+              <label>User ID</label>
+              <input type="text" value={currentUser?.uid || ''} disabled />
+            </div>
           </div>
-          
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'กำลังเปลี่ยน...' : 'เปลี่ยนรหัสผ่าน'}
-          </button>
-        </form>
+          {/* เพิ่มฟอร์มเปลี่ยนรหัสผ่านที่นี่ถ้าต้องการ */}
+          <div className="settings-actions">
+            <button onClick={saveSettings} className="save-btn">
+              💾 บันทึกการตั้งค่า
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-
+}
 export default Settings;
